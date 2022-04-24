@@ -17,13 +17,12 @@ pipeline {
 
           }
           steps {
-            sh './ci/build-app.sh'
+            sh 'ci/build-app.sh'
           }
         }
 
         stage('archive') {
           steps {
-            sh 'mkdir -p app/build/libs/'
             archiveArtifacts 'app/build/libs/'
           }
         }
