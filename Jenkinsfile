@@ -23,6 +23,7 @@ pipeline {
 
         stage('archive') {
           steps {
+            sh 'mkdir -p app/build/libs/'
             archiveArtifacts 'app/build/libs/'
           }
         }
