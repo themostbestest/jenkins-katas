@@ -14,7 +14,6 @@ pipeline {
             docker {
               image 'gradle:6-jdk11'
             }
-
           }
           steps {
             sh 'ci/build-app.sh'
@@ -22,32 +21,30 @@ pipeline {
           }
         }
 
-        stage('build app jdk8') {
-          agent {
-            docker {
-              image 'gradle:jdk8'
-            }
+      }
+    }
 
-          }
-          steps {
-            sh 'ci/build-app.sh'
-            archiveArtifacts 'app/build/libs/'
-          }
+    stage('Component test') {
+      agent {
+        docker {
+          image 'gradle:6-jdk11'
         }
+      }
+      when {
+        branch pattern: "^(?!dev)\S+$", comparator: "REGEXP"
+      }
+      steps {
+        echo 'Component test'
+        sh 'ci/component-test.sh'
+      }
+    }
 
-        stage('build app jdk13') {
-          agent {
-            docker {
-              image 'gradle:jdk13'
-            }
-
-          }
-          steps {
-            sh 'ci/build-app.sh'
-            archiveArtifacts 'app/build/libs/'
-          }
-        }
-
+    stage('Deploy') {
+      when {
+        branch 'master'
+      }
+      steps {
+        echo 'Deploying'
       }
     }
 
