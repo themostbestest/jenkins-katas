@@ -48,6 +48,12 @@ pipeline {
           }
         }
 
+        stage('asd') {
+          steps {
+            sh 'echo hello'
+          }
+        }
+
       }
     }
 
