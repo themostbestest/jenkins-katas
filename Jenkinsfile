@@ -52,6 +52,9 @@ pipeline {
     }
 
     stage('push docker app') {
+      environment {
+        DOCKERCREDS = 'credentials(\'docker_login\')'
+      }
       steps {
         unstash 'code'
         sh 'ci/build-docker.sh'
