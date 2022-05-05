@@ -7,7 +7,7 @@ node {
                 }
             },
             "build app" : {
-                docker.image('gradle:jdk11').inside {
+                docker.image('gradle:6-jdk11').inside {
                     stage('Test') {
                         git 'https://github.com/themostbestest/jenkins-katas.git'
                         sh 'ci/build-app.sh'
