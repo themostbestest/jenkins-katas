@@ -31,6 +31,7 @@ pipeline {
         }
       }
       when {
+        beforeAgent true
         branch pattern: "^(?!dev)\S+$", comparator: "REGEXP"
       }
       steps {
