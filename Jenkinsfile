@@ -32,7 +32,10 @@ pipeline {
       }
       when {
         beforeAgent true
-        branch pattern: "^(?!dev)\\S+$", comparator: "REGEXP"
+        anyOf {
+          branch pattern: "^(?!dev)\\S+$", comparator: "REGEXP"
+          changeRequest()
+        }
       }
       steps {
         echo 'Component test'
