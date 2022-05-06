@@ -1,56 +1,83 @@
 pipeline {
   agent any
+  environment {
+    docker_username = 'adamnapieralski'
+  }
   stages {
-    stage('Parallel stuff') {
+    stage('Clone down') {
+      steps {
+        stash(excludes: '.git', name: 'code')
+      }
+    }
+
+    stage('Parallel execution') {
       parallel {
-        stage('say hello') {
+        stage('Say Hello') {
           steps {
-            echo 'Hello world'
+            sh 'echo "hello world"'
           }
         }
 
-        stage('build app default') {
+        stage('build app') {
           agent {
             docker {
-              image 'gradle:6-jdk11'
+              image 'gradle:jdk11'
             }
           }
+          options {
+            skipDefaultCheckout()
+          }
           steps {
+            unstash 'code'
             sh 'ci/build-app.sh'
+            stash 'code'
             archiveArtifacts 'app/build/libs/'
           }
         }
 
+        stage('test app') {
+          agent {
+            docker {
+              image 'gradle:jdk11'
+            }
+
+          }
+          options {
+            skipDefaultCheckout()
+          }
+          steps {
+            unstash 'code'
+            sh 'ci/unit-test-app.sh'
+            junit 'app/build/test-results/test/TEST-*.xml'
+          }
+        }
+
       }
     }
-
-    stage('Component test') {
-      agent {
-        docker {
-          image 'gradle:6-jdk11'
-        }
+    stage('push docker app') {
+      when { branch 'master' }
+      environment {
+        DOCKERCREDS = credentials('docker_login')
       }
+      steps {
+        input message: 'Do you want to push image to Docker Hub?', ok: 'Yes'
+        unstash 'code' //unstash the repository code
+        sh 'ci/build-docker.sh'
+        sh 'echo "$DOCKERCREDS_PSW" | docker login -u "$DOCKERCREDS_USR" --password-stdin' //login to docker hub with the credentials above
+        sh 'ci/push-docker.sh'
+      }
+    }
+    stage('component test') {
       when {
-        beforeAgent true
         anyOf {
-          branch pattern: "^(?!dev)\\S+\$", comparator: "REGEXP"
+          branch 'master'
           changeRequest()
         }
       }
       steps {
-        echo 'Component test'
+        unstash 'code'
         sh 'ci/component-test.sh'
       }
     }
-
-    stage('Deploy') {
-      when {
-        branch 'master'
-      }
-      steps {
-        echo 'Deploying'
-      }
-    }
-
   }
 }
