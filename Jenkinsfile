@@ -33,7 +33,7 @@ pipeline {
       when {
         beforeAgent true
         anyOf {
-          branch pattern: "^(?!dev)\\S+$", comparator: "REGEXP"
+          branch pattern: "^(?!dev)\\S+\$", comparator: "REGEXP"
           changeRequest()
         }
       }
